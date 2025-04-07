@@ -1,0 +1,13 @@
+C:\Users\Francois\source\repos\ecstacy\ecstacy\bin\Debug\ecstacy.exe.config
+C:\Users\Francois\source\repos\ecstacy\ecstacy\bin\Debug\ecstacy.exe
+C:\Users\Francois\source\repos\ecstacy\ecstacy\bin\Debug\ecstacy.pdb
+C:\Users\Francois\source\repos\ecstacy\ecstacy\bin\Debug\System.CodeDom.dll
+C:\Users\Francois\source\repos\ecstacy\ecstacy\bin\Debug\System.CodeDom.xml
+C:\Users\Francois\source\repos\ecstacy\ecstacy\obj\Debug\ecstacy.csproj.AssemblyReference.cache
+C:\Users\Francois\source\repos\ecstacy\ecstacy\obj\Debug\CheatLoader.Form1.resources
+C:\Users\Francois\source\repos\ecstacy\ecstacy\obj\Debug\ecstacy.Properties.Resources.resources
+C:\Users\Francois\source\repos\ecstacy\ecstacy\obj\Debug\ecstacy.csproj.GenerateResource.cache
+C:\Users\Francois\source\repos\ecstacy\ecstacy\obj\Debug\ecstacy.csproj.CoreCompileInputs.cache
+C:\Users\Francois\source\repos\ecstacy\ecstacy\obj\Debug\ecstacy.csproj.Up2Date
+C:\Users\Francois\source\repos\ecstacy\ecstacy\obj\Debug\ecstacy.exe
+C:\Users\Francois\source\repos\ecstacy\ecstacy\obj\Debug\ecstacy.pdb
