@@ -21,12 +21,18 @@
     <ClCompile Include="injector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="loadlibrarya.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="injector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="xorstr.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="loadlibrarya.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

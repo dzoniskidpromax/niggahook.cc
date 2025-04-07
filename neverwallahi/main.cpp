@@ -7,6 +7,7 @@
 
 #include "injector.h"
 #include "xorstr.hpp"
+#include "loadlibrarya.h"
 
 std::string GetUserTempPath() {
     char username[UNLEN + 1];
@@ -44,17 +45,13 @@ void SelfDelete(const char* exePath) {
 }
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-    std::string tempPath = GetUserTempPath();
-    std::string qdPath = tempPath + xorstr_("qd.dll");
-    std::string win64Path = tempPath + xorstr_("win64dialog.exe");
-    std::string selfPath = tempPath + xorstr_("example.exe");
+    //std::string tempPath = GetUserTempPath();
+    //std::string qdPath = tempPath + xorstr_("qd.dll");
+    //std::string win64Path = tempPath + xorstr_("win64dialog.exe");
+    //std::string selfPath = tempPath + xorstr_("example.exe");
+    std::string qdPath2 = "C:\\Users\\pc\\Documents\\GitHub\\niggahook.cc\\neverwallahi\\PolyHook_2.dll";
+    std::string qdPath = "C:\\Users\\pc\\Documents\\GitHub\\niggahook.cc\\neverwallahi\\vibranium.dll";
 
-    std::ifstream File(qdPath, std::ios::binary | std::ios::ate);
-    auto FileSize = File.tellg();
-    BYTE* pSrcData = new BYTE[(UINT_PTR)FileSize];
-    File.seekg(0, std::ios::beg);
-    File.read((char*)(pSrcData), FileSize);
-    File.close();
 
     DWORD processID = 0;
     while (processID == 0) {
@@ -63,16 +60,29 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     }
 
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processID);
+    loadlibaInject(qdPath2.c_str(), hProcess);
+
+    std::ifstream File(qdPath, std::ios::binary | std::ios::ate);
+    auto FileSize = File.tellg();
+    BYTE* pSrcData = new BYTE[(UINT_PTR)FileSize];
+    File.seekg(0, std::ios::beg);
+    File.read((char*)(pSrcData), FileSize);
+    File.close();
+
+
     if (hProcess) {
         if (ManualMapDll(hProcess, pSrcData, FileSize)) {
-            CloseHandle(hProcess);
+            
             delete[] pSrcData;
 
-            DeleteFileA(win64Path.c_str());
-            DeleteFileA(qdPath.c_str());
-            SelfDelete(selfPath.c_str());
+            //DeleteFileA(win64Path.c_str());
+           // DeleteFileA(qdPath.c_str());
+            //SelfDelete(selfPath.c_str());
         }
     }
+
+
+    CloseHandle(hProcess);
 
     return 0;
 }

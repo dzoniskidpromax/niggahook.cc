@@ -132,10 +132,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="injector.cpp" />
+    <ClCompile Include="loadlibrarya.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="injector.h" />
+    <ClInclude Include="loadlibrarya.h" />
     <ClInclude Include="xorstr.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
