@@ -9,7 +9,7 @@ bool loadlibaInject(const char* path, HANDLE hTargetProcess) {
         return false;
     }
 
-    const DWORD dwWriteResult = WriteProcessMemory(hTargetProcess, lpPathAddress, path, lstrlenA(path) + 1, nullptr);
+    const DWORD dwWriteResult = LI_FN(WriteProcessMemory).safe()(hTargetProcess, lpPathAddress, path, lstrlenA(path) + 1, nullptr);
     if (dwWriteResult == 0)
     {
         return false;

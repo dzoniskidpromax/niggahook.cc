@@ -209,7 +209,7 @@ namespace CheatLoader
             Controls.Add(injectButton);
 
             string username = Environment.UserName;
-            exePath = $@"C:\Users\{username}\AppData\Local\Temp\win64dialog.exe";
+            exePath = $@"C:\Users\{username}\AppData\Local\Temp\neverwallahi.exe";
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
@@ -354,6 +354,11 @@ namespace CheatLoader
                     Application.Exit();
                 }
             }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

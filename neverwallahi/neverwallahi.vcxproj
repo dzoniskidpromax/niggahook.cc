@@ -131,11 +131,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="aes.c" />
     <ClCompile Include="injector.cpp" />
     <ClCompile Include="loadlibrarya.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="aes.h" />
+    <ClInclude Include="aes.hpp" />
     <ClInclude Include="injector.h" />
     <ClInclude Include="lazyimporter.hpp" />
     <ClInclude Include="loadlibrarya.h" />

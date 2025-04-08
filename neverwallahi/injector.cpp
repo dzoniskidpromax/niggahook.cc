@@ -121,7 +121,7 @@ bool ManualMapDll(HANDLE hProc, BYTE* pSrcData, SIZE_T FileSize, bool ClearHeade
 		LI_FN(VirtualFreeEx).safe()(hProc, pShellcode, 0, MEM_RELEASE);
 		return false;
 	}
-	CloseHandle(hThread);
+	LI_FN(CloseHandle).safe()(hThread);
 
 
 	HINSTANCE hCheck = NULL;
