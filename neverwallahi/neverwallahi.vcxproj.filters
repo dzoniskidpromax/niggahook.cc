@@ -35,5 +35,8 @@
     <ClInclude Include="loadlibrarya.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="lazyimporter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,4 +1,6 @@
 #include "injector.h"
+#include "lazyimporter.hpp"
+#include "xorstr.hpp"
 
 #if defined(DISABLE_OUTPUT)
 #define ILog(data, ...)
@@ -30,20 +32,27 @@ bool ManualMapDll(HANDLE hProc, BYTE* pSrcData, SIZE_T FileSize, bool ClearHeade
 		return false;
 	}
 
-
-	pTargetBase = reinterpret_cast<BYTE*>(VirtualAllocEx(hProc, nullptr, pOldOptHeader->SizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+	pTargetBase = reinterpret_cast<BYTE*>(LI_FN(VirtualAllocEx).safe()(hProc, nullptr, pOldOptHeader->SizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
 	if (!pTargetBase) {
 		return false;
 	}
 
 	DWORD oldp = 0;
-	VirtualProtectEx(hProc, pTargetBase, pOldOptHeader->SizeOfImage, PAGE_EXECUTE_READWRITE, &oldp);
+	LI_FN(VirtualProtectEx).safe()(hProc, pTargetBase, pOldOptHeader->SizeOfImage, PAGE_EXECUTE_READWRITE, &oldp);
 
 	MANUAL_MAPPING_DATA data{ 0 };
-	data.pLoadLibraryA = LoadLibraryA;
-	data.pGetProcAddress = GetProcAddress;
+
+	const HMODULE hModule = LI_FN(GetModuleHandleA).safe()(xorstr_("kernel32.dll"));
+	if (hModule == INVALID_HANDLE_VALUE || hModule == nullptr)
+		return false;
+	const DWORD* pLoadLibraryAlol = (DWORD*)LI_FN(GetProcAddress).safe()(hModule, xorstr_("LoadLibraryA"));
+	const DWORD* pGetProcAddrlol = (DWORD*)LI_FN(GetProcAddress).safe()(hModule, xorstr_("GetProcAddress"));
+	const DWORD* RtlAddFunctionTablelol = (DWORD*)LI_FN(GetProcAddress).safe()(hModule, xorstr_("RtlAddFunctionTable"));
+
+	data.pLoadLibraryA = (f_LoadLibraryA)pLoadLibraryAlol;
+	data.pGetProcAddress = (f_GetProcAddress)pGetProcAddrlol;
 #ifdef _WIN64
-	data.pRtlAddFunctionTable = (f_RtlAddFunctionTable)RtlAddFunctionTable;
+	data.pRtlAddFunctionTable = (f_RtlAddFunctionTable)RtlAddFunctionTablelol;
 #else 
 	SEHExceptionSupport = false;
 #endif
@@ -54,46 +63,46 @@ bool ManualMapDll(HANDLE hProc, BYTE* pSrcData, SIZE_T FileSize, bool ClearHeade
 
 
 	//File header
-	if (!WriteProcessMemory(hProc, pTargetBase, pSrcData, 0x1000, nullptr)) { //only first 0x1000 bytes for the header
-		VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
+	if (!LI_FN(WriteProcessMemory).safe()(hProc, pTargetBase, pSrcData, 0x1000, nullptr)) { //only first 0x1000 bytes for the header
+		LI_FN(VirtualFreeEx).safe()(hProc, pTargetBase, 0, MEM_RELEASE);
 		return false;
 	}
 
 	IMAGE_SECTION_HEADER* pSectionHeader = IMAGE_FIRST_SECTION(pOldNtHeader);
 	for (UINT i = 0; i != pOldFileHeader->NumberOfSections; ++i, ++pSectionHeader) {
 		if (pSectionHeader->SizeOfRawData) {
-			if (!WriteProcessMemory(hProc, pTargetBase + pSectionHeader->VirtualAddress, pSrcData + pSectionHeader->PointerToRawData, pSectionHeader->SizeOfRawData, nullptr)) {
-				VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
+			if (!LI_FN(WriteProcessMemory).safe()(hProc, pTargetBase + pSectionHeader->VirtualAddress, pSrcData + pSectionHeader->PointerToRawData, pSectionHeader->SizeOfRawData, nullptr)) {
+				LI_FN(VirtualFreeEx).safe()(hProc, pTargetBase, 0, MEM_RELEASE);
 				return false;
 			}
 		}
 	}
 
 	//Mapping params
-	BYTE* MappingDataAlloc = reinterpret_cast<BYTE*>(VirtualAllocEx(hProc, nullptr, sizeof(MANUAL_MAPPING_DATA), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+	BYTE* MappingDataAlloc = reinterpret_cast<BYTE*>(LI_FN(VirtualAllocEx).safe()(hProc, nullptr, sizeof(MANUAL_MAPPING_DATA), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
 	if (!MappingDataAlloc) {
-		VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
+		LI_FN(VirtualFreeEx).safe()(hProc, pTargetBase, 0, MEM_RELEASE);
 		return false;
 	}
 
-	if (!WriteProcessMemory(hProc, MappingDataAlloc, &data, sizeof(MANUAL_MAPPING_DATA), nullptr)) {
-		VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
-		VirtualFreeEx(hProc, MappingDataAlloc, 0, MEM_RELEASE);
+	if (!LI_FN(WriteProcessMemory).safe()(hProc, MappingDataAlloc, &data, sizeof(MANUAL_MAPPING_DATA), nullptr)) {
+		LI_FN(VirtualFreeEx).safe()(hProc, pTargetBase, 0, MEM_RELEASE);
+		LI_FN(VirtualFreeEx).safe()(hProc, MappingDataAlloc, 0, MEM_RELEASE);
 		return false;
 	}
 
 	//Shell code
-	void* pShellcode = VirtualAllocEx(hProc, nullptr, 0x1000, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	void* pShellcode = LI_FN(VirtualAllocEx).safe()(hProc, nullptr, 0x1000, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	if (!pShellcode) {
-		VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
-		VirtualFreeEx(hProc, MappingDataAlloc, 0, MEM_RELEASE);
+		LI_FN(VirtualFreeEx).safe()(hProc, pTargetBase, 0, MEM_RELEASE);
+		LI_FN(VirtualFreeEx).safe()(hProc, MappingDataAlloc, 0, MEM_RELEASE);
 		return false;
 	}
 
-	if (!WriteProcessMemory(hProc, pShellcode, Shellcode, 0x1000, nullptr)) {
-		VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
-		VirtualFreeEx(hProc, MappingDataAlloc, 0, MEM_RELEASE);
-		VirtualFreeEx(hProc, pShellcode, 0, MEM_RELEASE);
+	if (!LI_FN(WriteProcessMemory).safe()(hProc, pShellcode, Shellcode, 0x1000, nullptr)) {
+		LI_FN(VirtualFreeEx).safe()(hProc, pTargetBase, 0, MEM_RELEASE);
+		LI_FN(VirtualFreeEx).safe()(hProc, MappingDataAlloc, 0, MEM_RELEASE);
+		LI_FN(VirtualFreeEx).safe()(hProc, pShellcode, 0, MEM_RELEASE);
 		return false;
 	}
 
@@ -105,11 +114,11 @@ bool ManualMapDll(HANDLE hProc, BYTE* pSrcData, SIZE_T FileSize, bool ClearHeade
 	system("pause");
 #endif
 
-	HANDLE hThread = CreateRemoteThread(hProc, nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(pShellcode), MappingDataAlloc, 0, nullptr);
+	HANDLE hThread = LI_FN(CreateRemoteThread).safe()(hProc, nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(pShellcode), MappingDataAlloc, 0, nullptr);
 	if (!hThread) {
-		VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
-		VirtualFreeEx(hProc, MappingDataAlloc, 0, MEM_RELEASE);
-		VirtualFreeEx(hProc, pShellcode, 0, MEM_RELEASE);
+		LI_FN(VirtualFreeEx).safe()(hProc, pTargetBase, 0, MEM_RELEASE);
+		LI_FN(VirtualFreeEx).safe()(hProc, MappingDataAlloc, 0, MEM_RELEASE);
+		LI_FN(VirtualFreeEx).safe()(hProc, pShellcode, 0, MEM_RELEASE);
 		return false;
 	}
 	CloseHandle(hThread);
@@ -124,13 +133,13 @@ bool ManualMapDll(HANDLE hProc, BYTE* pSrcData, SIZE_T FileSize, bool ClearHeade
 		}
 
 		MANUAL_MAPPING_DATA data_checked{ 0 };
-		ReadProcessMemory(hProc, MappingDataAlloc, &data_checked, sizeof(data_checked), nullptr);
+		LI_FN(ReadProcessMemory).safe()(hProc, MappingDataAlloc, &data_checked, sizeof(data_checked), nullptr);
 		hCheck = data_checked.hMod;
 
 		if (hCheck == (HINSTANCE)0x404040) {
-			VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
-			VirtualFreeEx(hProc, MappingDataAlloc, 0, MEM_RELEASE);
-			VirtualFreeEx(hProc, pShellcode, 0, MEM_RELEASE);
+			LI_FN(VirtualFreeEx).safe()(hProc, pTargetBase, 0, MEM_RELEASE);
+			LI_FN(VirtualFreeEx).safe()(hProc, MappingDataAlloc, 0, MEM_RELEASE);
+			LI_FN(VirtualFreeEx).safe()(hProc, pShellcode, 0, MEM_RELEASE);
 			return false;
 		}
 		else if (hCheck == (HINSTANCE)0x505050) {
@@ -147,7 +156,7 @@ bool ManualMapDll(HANDLE hProc, BYTE* pSrcData, SIZE_T FileSize, bool ClearHeade
 
 	//CLEAR PE HEAD
 	if (ClearHeader) {
-		if (!WriteProcessMemory(hProc, pTargetBase, emptyBuffer, 0x1000, nullptr)) {
+		if (!LI_FN(WriteProcessMemory).safe()(hProc, pTargetBase, emptyBuffer, 0x1000, nullptr)) {
 		}
 	}
 	//END CLEAR PE HEAD
@@ -160,7 +169,7 @@ bool ManualMapDll(HANDLE hProc, BYTE* pSrcData, SIZE_T FileSize, bool ClearHeade
 				if ((SEHExceptionSupport ? 0 : strcmp((char*)pSectionHeader->Name, ".pdata") == 0) ||
 					strcmp((char*)pSectionHeader->Name, ".rsrc") == 0 ||
 					strcmp((char*)pSectionHeader->Name, ".reloc") == 0) {
-					if (!WriteProcessMemory(hProc, pTargetBase + pSectionHeader->VirtualAddress, emptyBuffer, pSectionHeader->Misc.VirtualSize, nullptr)) {
+					if (!LI_FN(WriteProcessMemory).safe()(hProc, pTargetBase + pSectionHeader->VirtualAddress, emptyBuffer, pSectionHeader->Misc.VirtualSize, nullptr)) {
 					}
 				}
 			}
@@ -180,21 +189,21 @@ bool ManualMapDll(HANDLE hProc, BYTE* pSrcData, SIZE_T FileSize, bool ClearHeade
 				else if ((pSectionHeader->Characteristics & IMAGE_SCN_MEM_EXECUTE) > 0) {
 					newP = PAGE_EXECUTE_READ;
 				}
-				if (VirtualProtectEx(hProc, pTargetBase + pSectionHeader->VirtualAddress, pSectionHeader->Misc.VirtualSize, newP, &old)) {
+				if (LI_FN(VirtualProtectEx).safe()(hProc, pTargetBase + pSectionHeader->VirtualAddress, pSectionHeader->Misc.VirtualSize, newP, &old)) {
 				}
 				else {
 				}
 			}
 		}
 		DWORD old = 0;
-		VirtualProtectEx(hProc, pTargetBase, IMAGE_FIRST_SECTION(pOldNtHeader)->VirtualAddress, PAGE_READONLY, &old);
+		LI_FN(VirtualProtectEx).safe()(hProc, pTargetBase, IMAGE_FIRST_SECTION(pOldNtHeader)->VirtualAddress, PAGE_READONLY, &old);
 	}
 
-	if (!WriteProcessMemory(hProc, pShellcode, emptyBuffer, 0x1000, nullptr)) {
+	if (!LI_FN(WriteProcessMemory).safe()(hProc, pShellcode, emptyBuffer, 0x1000, nullptr)) {
 	}
-	if (!VirtualFreeEx(hProc, pShellcode, 0, MEM_RELEASE)) {
+	if (!LI_FN(VirtualFreeEx).safe()(hProc, pShellcode, 0, MEM_RELEASE)) {
 	}
-	if (!VirtualFreeEx(hProc, MappingDataAlloc, 0, MEM_RELEASE)) {
+	if (!LI_FN(VirtualFreeEx).safe()(hProc, MappingDataAlloc, 0, MEM_RELEASE)) {
 	}
 
 	return true;

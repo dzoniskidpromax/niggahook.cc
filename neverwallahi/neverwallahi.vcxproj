@@ -137,6 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="injector.h" />
+    <ClInclude Include="lazyimporter.hpp" />
     <ClInclude Include="loadlibrarya.h" />
     <ClInclude Include="xorstr.hpp" />
   </ItemGroup>
